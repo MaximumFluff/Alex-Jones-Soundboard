@@ -1,22 +1,38 @@
+import { useState, useEffect } from 'react';
 import {
   ToastAndroid,
   TouchableHighlight,
   View,
   StyleSheet,
 } from 'react-native';
+import { Sound } from '@/constants/Sounds';
+import { Audio } from 'expo-av';
 
 type Props = {
   index?: number;
+  sound: Sound;
 };
 
-const ClipButton = ({ index }: Props) => {
+const ClipButton = ({ index, sound }: Props) => {
+  const [clip, setClip] = useState<Audio.Sound>();
+  useEffect(() => {
+    return clip
+      ? () => {
+          console.log('Unloading Sound');
+          clip.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
   return (
     <TouchableHighlight
       underlayColor={'#DDDDDD'}
       activeOpacity={0.5}
-      onPress={() =>
-        ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.SHORT)
-      }
+      onPress={async () => {
+        ToastAndroid.show('A pikachu appeared nearby !', ToastAndroid.SHORT);
+        const { sound: audio } = await Audio.Sound.createAsync(sound.file);
+        setClip(audio);
+        await audio.playAsync();
+      }}
       onLongPress={() =>
         ToastAndroid.show('My name is Jeff', ToastAndroid.SHORT)
       }
